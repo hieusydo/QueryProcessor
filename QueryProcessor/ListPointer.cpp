@@ -8,4 +8,14 @@
 
 #include "ListPointer.hpp"
 
-ListPointer::ListPointer() {}
+ListPointer::ListPointer(const std::string& fn, size_t invLPos, size_t mtdSz) : indexFn(fn) {
+    // Read from file
+}
+
+size_t ListPointer::nextGEQ(size_t did) {
+    return did;
+}
+
+void ListPointer::closeList() {
+    
+}

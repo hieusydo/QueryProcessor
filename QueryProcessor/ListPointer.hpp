@@ -28,7 +28,11 @@ private:
     
     std::string indexFn;
 public:
-    ListPointer();
+    ListPointer(const std::string& fn, size_t invLPos, size_t mtdSz);
+    
+    size_t nextGEQ(size_t did);
+    
+    void closeList();
 };
 
 #endif /* ListPointer_hpp */
