@@ -11,6 +11,8 @@
 #include <map>
 #include <queue>
 #include <string>
+#include <fstream>
+
 #include "ListPointer.hpp"
 
 const size_t MAX_SIZE = (size_t) - 1;
@@ -40,9 +42,16 @@ int main(int argc, const char * argv[]) {
     
     // Load url table and lexicon
     std::vector<UrlEntry> urlTable;
+    std::chrono::steady_clock::time_point beginLoadTable = std::chrono::steady_clock::now();
     loadUrlTable(urlTable, argv[1]);
+    std::chrono::steady_clock::time_point endLoadTable = std::chrono::steady_clock::now();
+    std::cout << std::to_string(urlTable.size()) << " entries loaded to urlTable. Elapsed: " << std::chrono::duration_cast<std::chrono::seconds>(endLoadTable - beginLoadTable).count() << "s.\n";
+    
     std::map<std::string, LexiconEntry> lexicon;
+    std::chrono::steady_clock::time_point beginLoadLexicon = std::chrono::steady_clock::now();
     loadLexicon(lexicon, argv[2]);
+    std::chrono::steady_clock::time_point endLoadLexicon = std::chrono::steady_clock::now();
+    std::cout << std::to_string(lexicon.size()) << " entries loaded to lexicon. Elapsed: " << std::chrono::duration_cast<std::chrono::seconds>(endLoadLexicon - beginLoadLexicon).count() << "s.\n";
     
     std::string indexFn = argv[3];
     
@@ -113,9 +122,31 @@ std::vector<std::string> parseQuery(const std::string& aQuery) {
 }
 
 void loadUrlTable(std::vector<UrlEntry>& urlTable, const std::string& fn) {
+    std::ifstream tableIfs(fn);
+    if (!tableIfs) {
+        std::cerr << "Failed to open " << fn << '\n';
+        exit(1);
+    }
     
+    size_t did;
+    std::string url;
+    size_t urlLen;
+    while (tableIfs >> did >> url >> urlLen) {
+        urlTable.push_back(UrlEntry(url, urlLen));
+    }
 }
 
 void loadLexicon(std::map<std::string, LexiconEntry>& lexicon, const std::string& fn) {
+    std::ifstream lexiconIfs(fn);
+    if (!lexiconIfs) {
+        std::cerr << "Failed to open " << fn << '\n';
+        exit(1);
+    }
     
+    std::string term;
+    size_t invIdxPos;
+    size_t metadataLen;
+    while (lexiconIfs >> term >> invIdxPos >> metadataLen) {
+        lexicon[term] = LexiconEntry(invIdxPos, metadataLen);
+    }
 }

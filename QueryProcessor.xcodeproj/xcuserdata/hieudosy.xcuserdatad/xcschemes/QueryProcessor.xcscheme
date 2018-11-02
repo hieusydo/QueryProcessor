@@ -63,15 +63,15 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/urlTable&quot;"
+            argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/test_urlTable&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/lexicon&quot;"
+            argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/test_lexicon&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/finalIndex&quot;"
+            argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/test_finalIndex&quot;"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>
