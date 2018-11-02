@@ -9,6 +9,8 @@
 /* Begin PBXBuildFile section */
 		741110EA2187D292005AFD99 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 741110E92187D292005AFD99 /* main.cpp */; };
 		741110F5218A7A4E005AFD99 /* ListPointer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 741110F3218A7A4E005AFD99 /* ListPointer.cpp */; };
+		74185F8C218BDADC007E714E /* VByteCompression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 74185F8B218BDADC007E714E /* VByteCompression.cpp */; };
+		74185F8E218BDAFC007E714E /* VByteCompression.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 74185F8D218BDAFC007E714E /* VByteCompression.hpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -28,6 +30,8 @@
 		741110E92187D292005AFD99 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		741110F3218A7A4E005AFD99 /* ListPointer.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = ListPointer.cpp; sourceTree = "<group>"; };
 		741110F4218A7A4E005AFD99 /* ListPointer.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = ListPointer.hpp; sourceTree = "<group>"; };
+		74185F8B218BDADC007E714E /* VByteCompression.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = VByteCompression.cpp; sourceTree = "<group>"; };
+		74185F8D218BDAFC007E714E /* VByteCompression.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = VByteCompression.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -44,6 +48,8 @@
 		741110DD2187D292005AFD99 = {
 			isa = PBXGroup;
 			children = (
+				74185F8D218BDAFC007E714E /* VByteCompression.hpp */,
+				74185F8B218BDADC007E714E /* VByteCompression.cpp */,
 				741110E82187D292005AFD99 /* QueryProcessor */,
 				741110E72187D292005AFD99 /* Products */,
 			);
@@ -123,6 +129,8 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				74185F8E218BDAFC007E714E /* VByteCompression.hpp in Sources */,
+				74185F8C218BDADC007E714E /* VByteCompression.cpp in Sources */,
 				741110EA2187D292005AFD99 /* main.cpp in Sources */,
 				741110F5218A7A4E005AFD99 /* ListPointer.cpp in Sources */,
 			);

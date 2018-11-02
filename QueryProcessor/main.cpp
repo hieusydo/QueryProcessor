@@ -12,6 +12,7 @@
 #include <queue>
 #include <string>
 #include <fstream>
+#include <math.h>
 
 #include "ListPointer.hpp"
 
@@ -33,6 +34,7 @@ struct UrlEntry {
 void loadUrlTable(std::vector<UrlEntry>& urlTable, const std::string& fn);
 void loadLexicon(std::map<std::string, LexiconEntry>& lexicon, const std::string& fn);
 std::vector<std::string> parseQuery(const std::string& aQuery);
+float getAvgDocLen(const std::vector<UrlEntry>& urlTable);
 
 int main(int argc, const char * argv[]) {
     if (argc != 4) {
@@ -47,6 +49,12 @@ int main(int argc, const char * argv[]) {
     std::chrono::steady_clock::time_point endLoadTable = std::chrono::steady_clock::now();
     std::cout << std::to_string(urlTable.size()) << " entries loaded to urlTable. Elapsed: " << std::chrono::duration_cast<std::chrono::seconds>(endLoadTable - beginLoadTable).count() << "s.\n";
     
+    // For BM25
+    const size_t N = urlTable.size();
+    const float K_1 = 1.2;
+    const float B = 0.75;
+    const float D_AVG = getAvgDocLen(urlTable);
+    
     std::map<std::string, LexiconEntry> lexicon;
     std::chrono::steady_clock::time_point beginLoadLexicon = std::chrono::steady_clock::now();
     loadLexicon(lexicon, argv[2]);
@@ -57,17 +65,17 @@ int main(int argc, const char * argv[]) {
     
     // Main loop: prompt user for input
     std::string query;
-    std::priority_queue<std::pair<float, size_t>> top10did;
+    std::priority_queue<std::pair<float, size_t>> topDids;
     while(std::cout << "Please enter your query: " && std::getline(std::cin, query)) {
-        std::cout << "Looking up '" << query << "'...\n";
+        std::cout << "\nSearching '" << query << "'...\n\n";
+        
         // Parse query
         std::vector<std::string> terms = parseQuery(query);
-        for (auto t : terms)
-            std::cout << t << '\n';
         
-        // DAAT
+        // DAAT processing
         std::vector<ListPointer> allLps;
         for(auto t : terms) {
+            // TODO: sort by length of inv list
             allLps.push_back(ListPointer(indexFn, lexicon[t].invListPos, lexicon[t].metadataSize));
         }
         
@@ -75,6 +83,8 @@ int main(int argc, const char * argv[]) {
         while (did < MAX_SIZE) {
             // Get next post from shortest list
             did = allLps[0].nextGEQ(did);
+            
+            if (did == (size_t) - 1) { break; }
             
             size_t d = 0;
             for (size_t i = 1; (i < allLps.size()) && ((d = allLps[i].nextGEQ(did)) == did); ++i) {}
@@ -86,6 +96,21 @@ int main(int argc, const char * argv[]) {
                 
                 // Computer BM25 score
                 
+                float score = 0;
+                for (size_t i = 0; i < allLps.size(); ++i) {
+                    float numerLeft = N - allLps[i].getNumDid() + 0.5;
+                    float denomLeft = allLps[i].getNumDid() + 0.5;
+                    float numerRight = (K_1 + 1) * allLps[i].getFreq();
+                    const float K = K_1 * ((1 - B) + B * urlTable[d].documentLen / D_AVG);
+                    float denomRight = K + allLps[i].getFreq();
+                    score += (log(numerLeft / denomLeft) * (numerRight/denomRight));
+                }
+                
+//                while (top10did.size() >= 10) {
+//                    top10did.pop();
+//                }
+                topDids.push(std::make_pair(score, d));
+                
                 // Increase to search for next post
                 did++;
             }
@@ -93,6 +118,16 @@ int main(int argc, const char * argv[]) {
         for (size_t i = 0; i < allLps.size(); ++i) { allLps[i].closeList(); }
             
         // end of DAAT
+        
+        // Print out results
+        std::cout << topDids.size() << " results found:\n";
+        size_t i = 0;
+        while (!topDids.empty()) {
+            std::cout << i << ". " << urlTable[topDids.top().second].url << '\n';
+            std::cout << "\tRelevance score: " << topDids.top().first << "\n\n";
+            topDids.pop();
+            i++;
+        }
     }
     
     
@@ -149,4 +184,11 @@ void loadLexicon(std::map<std::string, LexiconEntry>& lexicon, const std::string
     while (lexiconIfs >> term >> invIdxPos >> metadataLen) {
         lexicon[term] = LexiconEntry(invIdxPos, metadataLen);
     }
+}
+
+float getAvgDocLen(const std::vector<UrlEntry>& urlTable) {
+    float avg = 0;
+    for (auto e : urlTable)
+        avg += e.documentLen;
+    return (avg / urlTable.size());
 }

@@ -11,26 +11,33 @@
 
 #include <string>
 #include <vector>
+#include <iostream>
+#include <fstream>
 
 class ListPointer {
 private:
     // Meta-data info
     std::vector<size_t> chunkSizes;
     std::vector<size_t> lastDids;
+    size_t currChunkIdx;
     
     // Current chunk
-    std::vector<size_t> didChunk;
-    std::vector<size_t> freqChunk;
-    size_t didIdx;
-    size_t freqIdx;
+    std::vector<size_t> currDids;
+    std::vector<size_t> currFreqs;
+    size_t currDidIdx;
     
     size_t chunkStartPos;
     
-    std::string indexFn;
+    std::ifstream indexIfs;
 public:
+    // Essentially, openList interface
     ListPointer(const std::string& fn, size_t invLPos, size_t mtdSz);
     
-    size_t nextGEQ(size_t did);
+    size_t nextGEQ(size_t k);
+    
+    size_t getFreq() const;
+    
+    size_t getNumDid() const;
     
     void closeList();
 };
