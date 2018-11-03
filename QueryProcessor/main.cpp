@@ -13,8 +13,11 @@
 #include <string>
 #include <fstream>
 #include <math.h>
+#include <locale>
+#include <algorithm>
 
 #include "ListPointer.hpp"
+#include "DocumentStore.hpp"
 
 const size_t MAX_SIZE = (size_t) - 1;
 
@@ -35,6 +38,7 @@ void loadUrlTable(std::vector<UrlEntry>& urlTable, const std::string& fn);
 void loadLexicon(std::map<std::string, LexiconEntry>& lexicon, const std::string& fn);
 std::vector<std::string> parseQuery(const std::string& aQuery);
 float getAvgDocLen(const std::vector<UrlEntry>& urlTable);
+std::string generateSnippet(const std::vector<std::string>& terms, const std::string& document);
 
 int main(int argc, const char * argv[]) {
     if (argc != 4) {
@@ -43,6 +47,7 @@ int main(int argc, const char * argv[]) {
     }
     
     // Load url table and lexicon
+    std::cout << "Loading urlTable...\n";
     std::vector<UrlEntry> urlTable;
     std::chrono::steady_clock::time_point beginLoadTable = std::chrono::steady_clock::now();
     loadUrlTable(urlTable, argv[1]);
@@ -55,6 +60,7 @@ int main(int argc, const char * argv[]) {
     const float B = 0.75;
     const float D_AVG = getAvgDocLen(urlTable);
     
+    std::cout << "Loading lexicon...\n";
     std::map<std::string, LexiconEntry> lexicon;
     std::chrono::steady_clock::time_point beginLoadLexicon = std::chrono::steady_clock::now();
     loadLexicon(lexicon, argv[2]);
@@ -63,14 +69,18 @@ int main(int argc, const char * argv[]) {
     
     std::string indexFn = argv[3];
     
+    DocumentStore docStore;
+    
     // Main loop: prompt user for input
     std::string query;
     std::priority_queue<std::pair<float, size_t>> topDids;
-    while(std::cout << "Please enter your query: " && std::getline(std::cin, query)) {
+    while(std::cout << "\n====================\n\nPlease enter your query: " && std::getline(std::cin, query)) {
         std::cout << "\nSearching '" << query << "'...\n\n";
         
         // Parse query
         std::vector<std::string> terms = parseQuery(query);
+        
+        
         
         // DAAT processing
         std::vector<ListPointer> allLps;
@@ -120,13 +130,15 @@ int main(int argc, const char * argv[]) {
         // end of DAAT
         
         // Print out results
-        std::cout << topDids.size() << " results found:\n";
+        std::cout << topDids.size() << " results found. Most relevant ones:\n\n";
         size_t i = 0;
-        while (!topDids.empty()) {
-            std::cout << i << ". " << urlTable[topDids.top().second].url << '\n';
-            std::cout << "\tRelevance score: " << topDids.top().first << "\n\n";
+        while (!topDids.empty() && i < 10) {
+            size_t did = topDids.top().second;
+            std::cout << ++i << ".\tLink: " << urlTable[did].url << '\n';
+            std::cout << "\tRelevance score: " << topDids.top().first << "\n";
+            std::string snippet = generateSnippet(terms, docStore.getDocument(did));
+            std::cout << "\tSnippet: ..." << snippet << "...\n\n";
             topDids.pop();
-            i++;
         }
     }
     
@@ -191,4 +203,47 @@ float getAvgDocLen(const std::vector<UrlEntry>& urlTable) {
     for (auto e : urlTable)
         avg += e.documentLen;
     return (avg / urlTable.size());
+}
+
+// templated version of my_equal so it could work with both char and wchar_t
+template<typename charT>
+struct my_equal {
+    my_equal( const std::locale& loc ) : loc_(loc) {}
+    bool operator()(charT ch1, charT ch2) {
+        return std::toupper(ch1, loc_) == std::toupper(ch2, loc_);
+    }
+private:
+    const std::locale& loc_;
+};
+
+// find substring (case insensitive)
+template<typename T>
+int ci_find_substr( const T& str1, const T& str2, const std::locale& loc = std::locale() )
+{
+    typename T::const_iterator it = std::search( str1.begin(), str1.end(),
+                                                str2.begin(), str2.end(), my_equal<typename T::value_type>(loc) );
+    if ( it != str1.end() ) return it - str1.begin();
+    else return -1; // not found
+}
+
+std::string generateSnippet(const std::vector<std::string>& terms, const std::string& document) {
+    std::vector<size_t> termPos;
+    std::string lolInefficientDoc = document;
+    std::transform(lolInefficientDoc.begin(), lolInefficientDoc.end(), lolInefficientDoc.begin(), ::tolower);
+    for (std::string t : terms) {
+        size_t pos = lolInefficientDoc.find(t);
+        if (pos == std::string::npos) {
+            std::cerr << "Should be able to find\n";
+            exit(1);
+        }
+        termPos.push_back((size_t)pos);
+    }
+    size_t startSnippet = *(std::min_element(termPos.begin(), termPos.end()));
+    startSnippet = (startSnippet < 100) ? startSnippet : (startSnippet - 100);
+    size_t endSnippet = *(std::max_element(termPos.begin(), termPos.end())) + 100;
+    size_t lenSnippet = (endSnippet - startSnippet) > 500 ? 500 : (endSnippet - startSnippet);
+    
+    std::string snippet = document.substr(startSnippet, lenSnippet);
+    std::replace(snippet.begin(), snippet.end(), '\n', ' ');
+    return snippet;
 }

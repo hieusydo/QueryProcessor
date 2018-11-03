@@ -15,13 +15,18 @@ ListPointer::ListPointer(const std::string& fn, size_t invLPos, size_t mtdSz) : 
         std::cerr << "Failed to open " << fn << '\n';
         exit(1);
     }
-
     // Read in metadata and decode
     std::vector<unsigned char> mtdBlock(mtdSz);
     indexIfs.seekg(invLPos);
     indexIfs.read((char *)&mtdBlock[0], mtdSz);
     chunkStartPos = invLPos + mtdSz;
     std::vector<size_t> mtdDecoded = decodeVB(mtdBlock);
+    
+//    std::cout << "mtdSz: " << mtdSz << '\n';
+//    std::cout << "mtdDecoded:\n";
+//    for (auto i : mtdDecoded)
+//        std::cout << i << ' ';
+//    std::cout << '\n';
     
     // Parse decoded metadata 
     size_t i = 0;
@@ -32,6 +37,11 @@ ListPointer::ListPointer(const std::string& fn, size_t invLPos, size_t mtdSz) : 
     int numDids = (int)mtdDecoded[i++];
     while (numDids--) {
         lastDids.push_back(mtdDecoded[i++]);
+    }
+    
+    if (lastDids.size()*2 != chunkSizes.size()) {
+        std::cerr << "Internal error when constructing ListPointer\n";
+        exit(1);
     }
     
 //    std::cout << "chunkSizes:\n";
