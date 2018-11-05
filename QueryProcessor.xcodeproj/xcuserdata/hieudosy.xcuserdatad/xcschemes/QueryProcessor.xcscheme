@@ -64,27 +64,27 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/simple/urlTable&quot;"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/simple/lexicon&quot;"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/simple/finalIndex&quot;"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-200/urlTable&quot;"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-200/lexicon&quot;"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-200/finalIndex&quot;"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-50/urlTable&quot;"
@@ -96,6 +96,18 @@
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-50/finalIndex&quot;"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-150/urlTable&quot;"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-150/lexicon&quot;"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-150/finalIndex&quot;"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>

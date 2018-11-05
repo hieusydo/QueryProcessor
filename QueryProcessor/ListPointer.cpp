@@ -22,37 +22,35 @@ ListPointer::ListPointer(const std::string& fn, size_t invLPos, size_t mtdSz) : 
     chunkStartPos = invLPos + mtdSz;
     std::vector<size_t> mtdDecoded = decodeVB(mtdBlock);
     
-//    std::cout << "mtdSz: " << mtdSz << '\n';
-//    std::cout << "mtdDecoded:\n";
-//    for (auto i : mtdDecoded)
-//        std::cout << i << ' ';
-//    std::cout << '\n';
+    if (mtdDecoded.empty()) {
+        std::cerr << "Metadata corrupted\n";
+        exit(1);
+    }
     
-    // Parse decoded metadata 
+    // Extract <size of did block, size of freq block> and <last dids>
     size_t i = 0;
     int numChunks = (int)mtdDecoded[i++];
     while (numChunks--) {
+        if (i >= mtdDecoded.size()) {
+            std::cerr << "Metadata corrupted\n";
+            exit(1);
+        }
         chunkSizes.push_back(mtdDecoded[i++]);
     }
     int numDids = (int)mtdDecoded[i++];
     while (numDids--) {
+        if (i >= mtdDecoded.size()) {
+            std::cerr << "Metadata corrupted\n";
+            exit(1);
+        }
         lastDids.push_back(mtdDecoded[i++]);
     }
     
+    // Sanity check
     if (lastDids.size()*2 != chunkSizes.size()) {
-        std::cerr << "Internal error when constructing ListPointer\n";
+        std::cerr << "Metadata corrupted\n";
         exit(1);
     }
-    
-//    std::cout << "chunkSizes:\n";
-//    for (auto i : chunkSizes)
-//        std::cout << i << ' ';
-//    std::cout << "\n\n";
-//    
-//    std::cout << "lastDids:\n";
-//    for (auto i : lastDids)
-//        std::cout << i << ' ';
-//    std::cout << "\n\n";
 }
 
 size_t ListPointer::nextGEQ(size_t k) {
