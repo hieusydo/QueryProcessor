@@ -62,7 +62,8 @@ private:
     // Max heap of all top results for this search
     std::priority_queue<DocScore, std::vector<DocScore>, DocScoreComparator> topDids;
     size_t resultCnt; 
-    
+    const size_t K = 10;
+
     // Constants
     float D_AVG;
     size_t N;
@@ -75,17 +76,21 @@ private:
     // Read the entire lexicon into memory
     void loadLexicon();
     
-    // Returns a vector of terms from the query
-    std::vector<std::string> parseQuery(const std::string& aQuery, const std::string& boolTerm);
-    
     // Call to run DAAT intersection algorithm
     void processConjunctiveDAAT(const std::vector<std::string>& terms);
     
     // Call to run DAAT union algorithm
     void processDisjunctiveDAAT(const std::vector<std::string>& terms);
     
+    // Returns a vector of terms from the query
+    std::vector<std::string> parseQuery(const std::string& aQuery, const std::string& boolTerm) const;
+    
     // Returns an excerpt of the document with the terms
-    std::string generateSnippet(const std::vector<std::string>& terms, std::string& document);
+    std::string generateSnippet(const std::vector<std::string>& terms, std::string& document) const;
+    
+    float getBM25Score(const std::vector<ListPointer>& allLps, size_t d) const;
+    
+    bool terminateDisjunctiveDAAT(const std::vector<size_t>& allCandidates) const;
     
 public:
     QueryProcessor(const std::string& urlTableFn, const std::string& lexiconFn, const std::string& indexFn);

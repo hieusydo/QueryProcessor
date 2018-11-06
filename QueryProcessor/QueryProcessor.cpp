@@ -75,15 +75,17 @@ void QueryProcessor::search(const std::string& query) {
         processConjunctiveDAAT(terms);
     } else if (query.find(disjunctive) != std::string::npos) {
         terms = parseQuery(query, disjunctive);
-        // TODO: disjunctive queries
+        processDisjunctiveDAAT(terms);
     } else {
         terms.push_back(query);
-//        processConjunctiveDAAT(terms);
+        processConjunctiveDAAT(terms);
     }
     
     // Print out results
     std::chrono::steady_clock::time_point endSearch = std::chrono::steady_clock::now();
-    std::cout << resultCnt << " results found (" << std::chrono::duration_cast<std::chrono::milliseconds>(endSearch - beginSearch).count() << " ms). Most relevant ones:\n\n";
+    std::cout << resultCnt << " results found (" << std::chrono::duration_cast<std::chrono::milliseconds>(endSearch - beginSearch).count() << " ms).";
+    
+    if (!topDids.empty()) { std::cout << "Most relevant ones:\n\n"; }
     
     DocumentStore docStore("sqlite");
     std::vector<DocScore> sortedResults;
@@ -95,15 +97,19 @@ void QueryProcessor::search(const std::string& query) {
     for (int i = (int)sortedResults.size() - 1; i >= 0; --i) {
         size_t currDid = sortedResults[i].did;
         std::cout << (sortedResults.size() - i) << ".\tLink: " << urlTable[currDid].url << '\n';
+        
         std::cout << "\tRelevance score (BM25): " << sortedResults[i].score << "\n";
+        
         std::string document = docStore.getDocument(currDid);
-        std::string snippet = generateSnippet(terms, document);
-        std::cout << "\tSnippet: ..." << snippet << "...\n\n";
+        if (!document.empty()) {
+            std::string snippet = generateSnippet(terms, document);
+            std::cout << "\tSnippet: ..." << snippet << "...\n\n";
+        }
     }
     docStore.close();
 }
 
-std::vector<std::string> QueryProcessor::parseQuery(const std::string& aQuery, const std::string& boolTerm) {
+std::vector<std::string> QueryProcessor::parseQuery(const std::string& aQuery, const std::string& boolTerm) const {
     std::vector<std::string> terms;
     
     std::vector<size_t> allPos;
@@ -123,10 +129,7 @@ std::vector<std::string> QueryProcessor::parseQuery(const std::string& aQuery, c
     return terms;
 }
 
-void QueryProcessor::processConjunctiveDAAT(const std::vector<std::string>& terms) {
-    std::cout << "Processing conjunctive query...\n\n";
-    const size_t K = 10;
-    
+void QueryProcessor::processConjunctiveDAAT(const std::vector<std::string>& terms) {    
     // start of DAAT processing
     std::vector<ListPointer> allLps;
     for(const std::string& t : terms) {
@@ -148,26 +151,16 @@ void QueryProcessor::processConjunctiveDAAT(const std::vector<std::string>& term
         for (size_t i = 1; (i < allLps.size()) && ((d = allLps[i].nextGEQ(did)) == did); ++i) {}
         
         if (d > did) { did = d; } // docId is NOT in intersection
-        else { // docId is in intersection
-            // Get all frequencies
-            for (size_t i = 0; i < allLps.size(); ++i) { }
-            
+        else { // docId is in intersection            
             // Computer BM25 score
-            float score = 0;
-            for (size_t i = 0; i < allLps.size(); ++i) {
-                float numerLeft = N - allLps[i].getNumDid() + 0.5;
-                float denomLeft = allLps[i].getNumDid() + 0.5;
-                float numerRight = (K_1 + 1) * allLps[i].getFreq();
-                const float K = K_1 * ((1 - B) + B * urlTable[d].documentLen / D_AVG);
-                float denomRight = K + allLps[i].getFreq();
-                score += (log(numerLeft / denomLeft) * (numerRight/denomRight));
-            }
+            float bm25Score = getBM25Score(allLps, d);
             
             // Keep top-K intersected dids in heap
-            DocScore newDid(score, d);
+            DocScore newDid(bm25Score, d);
             topDids.push(newDid);
             while (topDids.size() > K) { topDids.pop(); }
             resultCnt += 1;
+            
             // Increase to search for next post
             did++;
         }
@@ -175,7 +168,22 @@ void QueryProcessor::processConjunctiveDAAT(const std::vector<std::string>& term
     for (size_t i = 0; i < allLps.size(); ++i) { allLps[i].closeList(); }
 }
 
-std::string QueryProcessor::generateSnippet(const std::vector<std::string>& terms, std::string& document) {
+float QueryProcessor::getBM25Score(const std::vector<ListPointer>& allLps, size_t d) const {
+    float score = 0;
+    for (size_t i = 0; i < allLps.size(); ++i) {
+        // Used number of chunks as f_t instead of number of dids
+        // Still reserve relative order
+        float numerLeft = N - allLps[i].getNumDid() + 0.5;
+        float denomLeft = allLps[i].getNumDid() + 0.5;
+        float numerRight = (K_1 + 1) * allLps[i].getFreq();
+        const float K = K_1 * ((1 - B) + B * urlTable[d].documentLen / D_AVG);
+        float denomRight = K + allLps[i].getFreq();
+        score += (log(numerLeft / denomLeft) * (numerRight/denomRight));
+    }
+    return score;
+}
+
+std::string QueryProcessor::generateSnippet(const std::vector<std::string>& terms, std::string& document) const {
     // Since doc was normalized when indexing, need to do it again to find the term...
     std::transform(document.begin(), document.end(), document.begin(), ::tolower);
     
@@ -198,6 +206,46 @@ std::string QueryProcessor::generateSnippet(const std::vector<std::string>& term
     return snippet;
 }
 
-void QueryProcessor::processDisjunctiveDAAT(const std::vector<std::string>& terms) {
+bool QueryProcessor::terminateDisjunctiveDAAT(const std::vector<size_t>& allCandidates) const {
+    // Only stop when ALL LPs are at the end
+    for (size_t c : allCandidates) {
+        if (c != MAX_SIZE) { return false; }
+    }
+    return true;
+}
+
+void QueryProcessor::processDisjunctiveDAAT(const std::vector<std::string>& terms) {    
+    // start of DAAT processing
+    std::vector<ListPointer> allLps;
+    for(const std::string& t : terms) {
+        // Do not openList if the term wasn't index
+        if (lexicon.find(t) == lexicon.end()) { break; }
+        
+        allLps.push_back(ListPointer(indexFn, lexicon[t].invListPos, lexicon[t].metadataSize));
+    }
     
+    size_t did = 0;
+    while (true) {
+        std::vector<size_t> didCandidates;
+        for (size_t i = 0; i < allLps.size(); ++i) {
+            didCandidates.push_back(allLps[i].nextGEQ(did));
+        }
+        if (terminateDisjunctiveDAAT(didCandidates)) { break; }
+
+        // Consider the smallest did and slowly slide right so as not to skip any did
+        did = *(std::min_element(didCandidates.begin(), didCandidates.end()));
+        
+        // Computer BM25 score
+        float bm25Score = getBM25Score(allLps, did);
+        
+        // Keep top-K intersected dids in heap
+        DocScore newDid(bm25Score, did);
+        topDids.push(newDid);
+        while (topDids.size() > K) { topDids.pop(); }
+        resultCnt += 1;
+        
+        // Increase to search for next post
+        did++;
+    }
+    for (size_t i = 0; i < allLps.size(); ++i) { allLps[i].closeList(); }
 }
