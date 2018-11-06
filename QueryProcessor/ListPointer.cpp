@@ -23,7 +23,7 @@ ListPointer::ListPointer(const std::string& fn, size_t invLPos, size_t mtdSz) : 
     std::vector<size_t> mtdDecoded = decodeVB(mtdBlock);
     
     if (mtdDecoded.empty()) {
-        std::cerr << "Metadata corrupted\n";
+        std::cerr << "Metadata corrupted: empty mtdDecoded\n";
         exit(1);
     }
     
@@ -32,7 +32,7 @@ ListPointer::ListPointer(const std::string& fn, size_t invLPos, size_t mtdSz) : 
     int numChunks = (int)mtdDecoded[i++];
     while (numChunks--) {
         if (i >= mtdDecoded.size()) {
-            std::cerr << "Metadata corrupted\n";
+            std::cerr << "Metadata corrupted: Index out of range for mtdDecoded\n";
             exit(1);
         }
         chunkSizes.push_back(mtdDecoded[i++]);
@@ -40,7 +40,7 @@ ListPointer::ListPointer(const std::string& fn, size_t invLPos, size_t mtdSz) : 
     int numDids = (int)mtdDecoded[i++];
     while (numDids--) {
         if (i >= mtdDecoded.size()) {
-            std::cerr << "Metadata corrupted\n";
+            std::cerr << "Metadata corrupted: Index out of range for mtdDecoded\n";
             exit(1);
         }
         lastDids.push_back(mtdDecoded[i++]);
@@ -48,7 +48,7 @@ ListPointer::ListPointer(const std::string& fn, size_t invLPos, size_t mtdSz) : 
     
     // Sanity check
     if (lastDids.size()*2 != chunkSizes.size()) {
-        std::cerr << "Metadata corrupted\n";
+        std::cerr << "Metadata corrupted: chunkSizes doesn't have twice more items than lastDids\n";
         exit(1);
     }
 }
@@ -61,13 +61,22 @@ size_t ListPointer::nextGEQ(size_t k) {
         numSkipBytes += (chunkSizes[chunkIdxToRead*2] + chunkSizes[chunkIdxToRead*2 + 1]);
         chunkIdxToRead++;
     }
+    // Make sure chunkIdxToRead does not go out of bound
+    if (chunkIdxToRead == lastDids.size()) {
+        chunkIdxToRead--;
+    }
     // Return MAX_SIZE if there is no k in this inv list
-    if (chunkIdxToRead == lastDids.size() && lastDids[chunkIdxToRead-1] < k) {
+    if (lastDids[chunkIdxToRead] < k) {
         return (size_t) - 1;
     }
     
     // Uncompress chunk
     if (currDids.empty() || chunkIdxToRead > currChunkIdx) {
+        if (currChunkIdx >= chunkSizes.size()) {
+            std::cerr << "nextGEQ error: Reading out of bound chunkSizes\n";
+            exit(1);
+        }
+        
         currChunkIdx = chunkIdxToRead;
         std::vector<unsigned char> didToRead(chunkSizes[currChunkIdx*2]);
         indexIfs.seekg(chunkStartPos + numSkipBytes);
@@ -79,11 +88,24 @@ size_t ListPointer::nextGEQ(size_t k) {
         indexIfs.read((char *)&freqToRead[0], chunkSizes[currChunkIdx*2 + 1]);
         currFreqs = decodeVB(freqToRead);
         
+        if (currDids.size() != currFreqs.size() || currDids.size() > 128 || currFreqs.size() > 128) {
+            std::cerr << "nextGEQ error: Each decoded chunk does not have the right amound of elements\n";
+            exit(1);
+        }
+        
         currDidIdx = 0; // reset idx in currDids
     }
     
     // Find GEQ
-    while (currDidIdx < currDids.size() && currDids[currDidIdx] < k) { currDidIdx++; }
+    while (currDidIdx < currDids.size()) {
+        if (currDids[currDidIdx] >= k) { break; }
+        currDidIdx++;
+    }
+    
+    if (currDidIdx >= currDids.size() || currDids[currDidIdx] < k) {
+        std::cerr << "nextGEQ error: Chunk does not have GEQ did\n";
+        exit(1);
+    }
     
     return currDids[currDidIdx];
 }

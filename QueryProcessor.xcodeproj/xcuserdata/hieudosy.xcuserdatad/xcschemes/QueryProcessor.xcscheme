@@ -42,7 +42,7 @@
       </AdditionalOptions>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "Release"
+      buildConfiguration = "Debug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -64,27 +64,27 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/simple/urlTable&quot;"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/simple/lexicon&quot;"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/simple/finalIndex&quot;"
-            isEnabled = "NO">
+            isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-200/urlTable&quot;"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-200/lexicon&quot;"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-200/finalIndex&quot;"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
             argument = "&quot;/Users/hieudosy/Documents/Projects/IndexBuilder/IndexBuilder/results/chunk-compress-50/urlTable&quot;"

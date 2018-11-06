@@ -15,6 +15,7 @@
 		74573413218FA9610044BE15 /* DocumentStore.hpp in Sources */ = {isa = PBXBuildFile; fileRef = 74573411218FA9610044BE15 /* DocumentStore.hpp */; };
 		74573414218FA9AC0044BE15 /* libcpp_redis.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7456B983218D568500324D83 /* libcpp_redis.a */; };
 		74573415218FA9AE0044BE15 /* libtacopie.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 7456B985218D568800324D83 /* libtacopie.a */; };
+		747571DA2190F6A5004B00D8 /* QueryProcessor.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 747571D82190F6A5004B00D8 /* QueryProcessor.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -40,6 +41,8 @@
 		7456B985218D568800324D83 /* libtacopie.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libtacopie.a; path = ../../../cpp_redis/build/lib/libtacopie.a; sourceTree = "<group>"; };
 		74573410218FA9610044BE15 /* DocumentStore.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; name = DocumentStore.cpp; path = ../IndexBuilder/IndexBuilder/DocumentStore.cpp; sourceTree = "<group>"; };
 		74573411218FA9610044BE15 /* DocumentStore.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; name = DocumentStore.hpp; path = ../IndexBuilder/IndexBuilder/DocumentStore.hpp; sourceTree = "<group>"; };
+		747571D82190F6A5004B00D8 /* QueryProcessor.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = QueryProcessor.cpp; sourceTree = "<group>"; };
+		747571D92190F6A5004B00D8 /* QueryProcessor.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = QueryProcessor.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +85,8 @@
 				741110E92187D292005AFD99 /* main.cpp */,
 				741110F3218A7A4E005AFD99 /* ListPointer.cpp */,
 				741110F4218A7A4E005AFD99 /* ListPointer.hpp */,
+				747571D82190F6A5004B00D8 /* QueryProcessor.cpp */,
+				747571D92190F6A5004B00D8 /* QueryProcessor.hpp */,
 			);
 			path = QueryProcessor;
 			sourceTree = "<group>";
@@ -156,6 +161,7 @@
 				7456B97C218D564100324D83 /* VByteCompression.cpp in Sources */,
 				7456B97D218D564100324D83 /* VByteCompression.hpp in Sources */,
 				741110EA2187D292005AFD99 /* main.cpp in Sources */,
+				747571DA2190F6A5004B00D8 /* QueryProcessor.cpp in Sources */,
 				741110F5218A7A4E005AFD99 /* ListPointer.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
