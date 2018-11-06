@@ -85,7 +85,7 @@ void QueryProcessor::search(const std::string& query) {
     std::chrono::steady_clock::time_point endSearch = std::chrono::steady_clock::now();
     std::cout << resultCnt << " results found (" << std::chrono::duration_cast<std::chrono::milliseconds>(endSearch - beginSearch).count() << " ms).";
     
-    if (!topDids.empty()) { std::cout << "Most relevant ones:\n\n"; }
+    if (!topDids.empty()) { std::cout << " Most relevant ones:\n\n"; }
     
     DocumentStore docStore("sqlite");
     std::vector<DocScore> sortedResults;
@@ -190,12 +190,15 @@ std::string QueryProcessor::generateSnippet(const std::vector<std::string>& term
     std::vector<size_t> termPos;
     for (std::string t : terms) {
         size_t pos = document.find(t);
-        if (pos == std::string::npos) {
-            std::cerr << "Error: Cannot find term in document. Weird?\n";
-            exit(1);
-        }
         termPos.push_back((size_t)pos);
     }
+    
+    // Disjunctive query result needs to contain at least one term at least once
+    if (termPos.size() == 0) {
+        std::cerr << "Payload does not contain any searched term\n";
+        exit(1);
+    }
+    
     size_t startSnippet = *(std::min_element(termPos.begin(), termPos.end()));
     startSnippet = (startSnippet < 500) ? startSnippet : (startSnippet - 500);
     size_t endSnippet = *(std::max_element(termPos.begin(), termPos.end())) + 500;
@@ -214,14 +217,14 @@ bool QueryProcessor::terminateDisjunctiveDAAT(const std::vector<size_t>& allCand
     return true;
 }
 
-void QueryProcessor::processDisjunctiveDAAT(const std::vector<std::string>& terms) {    
+void QueryProcessor::processDisjunctiveDAAT(const std::vector<std::string>& terms) {
     // start of DAAT processing
     std::vector<ListPointer> allLps;
-    for(const std::string& t : terms) {
+    for(size_t i = 0; i < terms.size(); ++i) {
         // Do not openList if the term wasn't index
-        if (lexicon.find(t) == lexicon.end()) { break; }
+        if (lexicon.find(terms[i]) == lexicon.end()) { break; }
         
-        allLps.push_back(ListPointer(indexFn, lexicon[t].invListPos, lexicon[t].metadataSize));
+        allLps.push_back(ListPointer(indexFn, lexicon[terms[i]].invListPos, lexicon[terms[i]].metadataSize));
     }
     
     size_t did = 0;

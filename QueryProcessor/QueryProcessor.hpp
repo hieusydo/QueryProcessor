@@ -88,8 +88,10 @@ private:
     // Returns an excerpt of the document with the terms
     std::string generateSnippet(const std::vector<std::string>& terms, std::string& document) const;
     
+    // Calculate BM25 score
     float getBM25Score(const std::vector<ListPointer>& allLps, size_t d) const;
     
+    // Returns if Disjunctive DAAT should be terminated
     bool terminateDisjunctiveDAAT(const std::vector<size_t>& allCandidates) const;
     
 public:
