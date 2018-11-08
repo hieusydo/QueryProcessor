@@ -133,7 +133,7 @@ void QueryProcessor::processConjunctiveDAAT(const std::vector<std::string>& term
     // start of DAAT processing
     std::vector<ListPointer> allLps;
     for(const std::string& t : terms) {
-        // Do not openList if the term wasn't index
+        // If a term isn't found, the conjunctive condition fails; the search stops
         if (lexicon.find(t) == lexicon.end()) { break; }
         
         // TODO: optimize by sorting by length of inv list
@@ -202,7 +202,7 @@ std::string QueryProcessor::generateSnippet(const std::vector<std::string>& term
     size_t startSnippet = *(std::min_element(termPos.begin(), termPos.end()));
     startSnippet = (startSnippet < 500) ? startSnippet : (startSnippet - 500);
     size_t endSnippet = *(std::max_element(termPos.begin(), termPos.end())) + 500;
-    size_t lenSnippet = (endSnippet - startSnippet) > 2000 ? 2000 : (endSnippet - startSnippet);
+    size_t lenSnippet = (endSnippet - startSnippet) > 1000 ? 1000 : (endSnippet - startSnippet);
     
     std::string snippet = document.substr(startSnippet, lenSnippet);
     std::replace(snippet.begin(), snippet.end(), '\n', ' ');
@@ -221,8 +221,8 @@ void QueryProcessor::processDisjunctiveDAAT(const std::vector<std::string>& term
     // start of DAAT processing
     std::vector<ListPointer> allLps;
     for(size_t i = 0; i < terms.size(); ++i) {
-        // Do not openList if the term wasn't index
-        if (lexicon.find(terms[i]) == lexicon.end()) { break; }
+        // Skip the term if it's not indexed
+        if (lexicon.find(terms[i]) == lexicon.end()) { continue; }
         
         allLps.push_back(ListPointer(indexFn, lexicon[terms[i]].invListPos, lexicon[terms[i]].metadataSize));
     }
